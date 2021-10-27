@@ -19,11 +19,36 @@ async function run() {
     await client.connect();
     const database = client.db("volunteer_network");
     const eventCollection = database.collection("events");
+    const userEventCollection = database.collection("user_events");
 
     app.get("/events", async (req, res) => {
       const cursor = eventCollection.find();
       const result = await cursor.toArray();
       res.send(result);
+    });
+
+    app.get("/event/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await eventCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.post("/event/register", async (req, res) => {
+      const newEvent = req.body;
+      const result = await userEventCollection.insertOne(newEvent);
+      res.json(result);
+    });
+
+    app.get("/user/events", async (req, res) => {
+      const userID = req.query.userID;
+      const query = { userId: { $in: [userID] } };
+      const result = await userEventCollection.find(query).toArray();
+      const eventIdArr = [];
+      result.forEach((item) => eventIdArr.push(item.eventId));
+      const eventQuery = { eventId: { $in: eventIdArr } };
+      const userEvents = await eventCollection.find(eventQuery).toArray();
+      res.send(userEvents);
     });
   } finally {
     // await client.close()
