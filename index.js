@@ -36,7 +36,16 @@ async function run() {
 
     app.post("/event/register", async (req, res) => {
       const newEvent = req.body;
-      const result = await userEventCollection.insertOne(newEvent);
+      const userId = newEvent.userId;
+      const eventId = newEvent.eventId;
+      const query = { userId: { $in: [userId] }, eventId: { $in: [eventId] } };
+      let result;
+      const findEvents = await userEventCollection.find(query).toArray();
+      if (findEvents.length > 0) {
+        result = { eventAdded: true };
+      } else {
+        result = await userEventCollection.insertOne(newEvent);
+      }
       res.json(result);
     });
 
@@ -49,6 +58,22 @@ async function run() {
       const eventQuery = { eventId: { $in: eventIdArr } };
       const userEvents = await eventCollection.find(eventQuery).toArray();
       res.send(userEvents);
+    });
+
+    // delele event form
+    app.delete("/user/events/:eventId/:userId", async (req, res) => {
+      const eventId = req.params.eventId;
+      const userId = req.params.userId;
+      const query = { userId: { $in: [userId] }, eventId: { $in: [eventId] } };
+      const result = await userEventCollection.deleteOne(query);
+      console.log(result);
+      res.json(result);
+    });
+
+    app.get("/event_list", async (req, res) => {
+      const cursor = userEventCollection.find({});
+      const result = await cursor.toArray();
+      res.send(result);
     });
   } finally {
     // await client.close()
