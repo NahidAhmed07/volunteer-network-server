@@ -27,6 +27,21 @@ async function run() {
       res.send(result);
     });
 
+    // add a new event
+    app.post("/events", async (req, res) => {
+      const newEvent = req.body;
+      const result = await eventCollection.insertOne(newEvent);
+      res.json(newEvent);
+    });
+    // single event delete
+    app.delete("/events/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await eventCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // get single event
     app.get("/event/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -34,6 +49,7 @@ async function run() {
       res.send(result);
     });
 
+    // register user event
     app.post("/event/register", async (req, res) => {
       const newEvent = req.body;
       const userId = newEvent.userId;
@@ -49,6 +65,7 @@ async function run() {
       res.json(result);
     });
 
+    // get user register all event
     app.get("/user/events", async (req, res) => {
       const userID = req.query.userID;
       const query = { userId: { $in: [userID] } };
@@ -60,7 +77,7 @@ async function run() {
       res.send(userEvents);
     });
 
-    // delele event form
+    // delete event form
     app.delete("/user/events/:eventId/:userId", async (req, res) => {
       const eventId = req.params.eventId;
       const userId = req.params.userId;
@@ -70,6 +87,7 @@ async function run() {
       res.json(result);
     });
 
+    // get all user event list for admin
     app.get("/event_list", async (req, res) => {
       const cursor = userEventCollection.find({});
       const result = await cursor.toArray();
