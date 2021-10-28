@@ -31,7 +31,7 @@ async function run() {
     app.post("/events", async (req, res) => {
       const newEvent = req.body;
       const result = await eventCollection.insertOne(newEvent);
-      res.json(newEvent);
+      res.json(result);
     });
     // single event delete
     app.delete("/events/:id", async (req, res) => {
@@ -83,7 +83,6 @@ async function run() {
       const userId = req.params.userId;
       const query = { userId: { $in: [userId] }, eventId: { $in: [eventId] } };
       const result = await userEventCollection.deleteOne(query);
-      console.log(result);
       res.json(result);
     });
 
